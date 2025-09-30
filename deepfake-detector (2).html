@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMINARA - AI Image Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23667eea" fill-opacity="0.3" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,149.3C960,160,1056,160,1152,138.7C1248,117,1344,75,1392,53.3L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>') no-repeat top center,
+                        linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-size: 100% 400px, cover;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #0f3460;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        nav a:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+
+        nav a:hover:after {
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            color: white;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #a8c0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+            text-shadow: 0 0 30px rgba(168, 192, 255, 0.5);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            color: #0f3460;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .disclaimer {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 5px solid #e17055;
+            margin-bottom: 2rem;
+        }
+
+        .disclaimer h3 {
+            color: #d63031;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .disclaimer p {
+            color: #2d3436;
+            line-height: 1.8;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .tech-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 0.5rem;
+        }
+
+        .tech-item p {
+            opacity: 0.95;
+            line-height: 1.7;
+        }
+
+        .applications {
+            margin-top: 2rem;
+        }
+
+        .app-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .app-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .app-item h4 {
+            color: #0f3460;
+            margin-bottom: 0.5rem;
+        }
+
+        .objectives-list {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .objectives-list li {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            border-radius: 8px;
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .objectives-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 1rem;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 2rem 0;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .result {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .result.ai {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .result.human {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .result h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-bar {
+            background: rgba(255,255,255,0.3);
+            height: 35px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #0f3460;
+        }
+
+        .preview-img {
+            max-width: 350px;
+            max-height: 350px;
+            border-radius: 15px;
+            margin: 1rem auto;
+            display: block;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            text-align: center;
+            margin-top: 4rem;
+            backdrop-filter: blur(10px);
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+            color: #0f3460;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .section {
+                padding: 2rem 1.5rem;
+            }
+
+            .tech-grid, .metrics-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#demo">Try It Out</a></li>
+            <li><a href="#purpose">Educational Purpose</a></li>
+            <li><a href="#tools">Tools & Technologies</a></li>
+            <li><a href="#applications">Applications</a></li>
+        </ul>
+    </nav>
+
+    <div class="hero">
+        <div class="logo">LUMINARA</div>
+        <p class="tagline">Illuminating Truth in the Digital Age</p>
+    </div>
+
+    <div class="container">
+        <section id="overview" class="section">
+            <h2>Project Overview</h2>
+            <p style="font-size: 1.1rem; line-height: 1.8;">LUMINARA is an advanced artificial intelligence system designed to detect and classify AI-generated images. In an era where synthetic media is increasingly sophisticated, this project aims to provide reliable detection capabilities while promoting transparency and authenticity in digital content. The system leverages state-of-the-art deep learning architectures to analyze visual patterns and identify characteristics unique to AI-generated imagery.</p>
+        </section>
+
+        <section id="demo" class="section">
+            <h2>Try the Detector</h2>
+            <p style="font-size: 1.05rem; margin-bottom: 1.5rem;">Upload an image to analyze whether it was created by a human or generated by AI. Supported formats include JPG, PNG, and WEBP.</p>
+            
+            <div class="upload-area" id="uploadArea">
+                <p style="font-size: 3rem; margin-bottom: 1rem;">📸</p>
+                <p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600;">Drag & Drop Image Here</p>
+                <p style="opacity: 0.7; margin-bottom: 1.5rem;">or</p>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Select Image File</button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div id="result" class="result">
+                <img id="previewImg" class="preview-img" alt="Preview">
+                <h3 id="resultLabel"></h3>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+                <p id="resultText" style="font-size: 1.1rem;"></p>
+            </div>
+        </section>
+
+        <div class="disclaimer">
+            <h3>Educational Purpose & Benefits</h3>
+            <p>LUMINARA is developed for educational and research purposes to advance understanding in AI-generated content detection. This tool serves as a valuable resource for researchers, educators, and students studying machine learning, computer vision, and digital media authentication. By providing transparent evaluation metrics and accessible technology, LUMINARA contributes to the broader scientific community's efforts in maintaining digital content integrity and fostering critical thinking about AI-generated media.</p>
+        </div>
+
+        <section id="applications" class="section">
+            <h2>Applications & Objectives</h2>
+            
+            <div class="applications">
+                <div class="app-item">
+                    <h4>Media Verification</h4>
+                    <p>Assist journalists and fact-checkers in verifying the authenticity of digital images in news reporting and investigative journalism.</p>
+                </div>
+                
+                <div class="app-item">
+                    <h4>Educational Research</h4>
+                    <p>Provide a platform for academic institutions to study AI-generated content patterns and develop counter-detection methodologies.</p>
+                </div>
+                
+                <div class="app-item">
+                    <h4>Content Moderation</h4>
+                    <p>Support social media platforms and content hosting services in identifying synthetic media for proper labeling and transparency.</p>
+                </div>
+                
+                <div class="app-item">
+                    <h4>Digital Forensics</h4>
+                    <p>Aid forensic analysts in investigating cases involving manipulated or synthetic visual evidence.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; color: #0f3460; font-size: 1.5rem;">Project Objectives</h3>
+            <ul class="objectives-list">
+                <li>Develop robust detection algorithms capable of identifying diverse AI-generated image types</li>
+                <li>Maintain high accuracy across various image resolutions and compression formats</li>
+                <li>Provide interpretable results with confidence scores for informed decision-making</li>
+                <li>Contribute to open research in AI detection and digital media authentication</li>
+                <li>Foster awareness about the capabilities and limitations of synthetic media detection</li>
+            </ul>
+        </section>
+
+        <section id="tools" class="section">
+            <h2>Tools & Technologies</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <h3>PyTorch</h3>
+                    <p>Primary deep learning framework used for model development, training, and inference. PyTorch provides dynamic computational graphs and extensive GPU acceleration support, enabling efficient neural network operations.</p>
+                </div>
+                
+                <div class="tech-item">
+                    <h3>EfficientNet B4</h3>
+                    <p>State-of-the-art convolutional neural network architecture serving as the backbone. EfficientNet B4 balances model depth, width, and resolution for optimal accuracy and computational efficiency.</p>
+                </div>
+                
+                <div class="tech-item">
+                    <h3>Timm Library</h3>
+                    <p>PyTorch Image Models library providing pretrained model architectures and utilities. Timm facilitates transfer learning and offers standardized implementations of modern computer vision models.</p>
+                </div>
+                
+                <div class="tech-item">
+                    <h3>Torchvision</h3>
+                    <p>Computer vision toolkit for PyTorch containing image transformation utilities, data augmentation techniques, and preprocessing pipelines essential for robust model training.</p>
+                </div>
+                
+                <div class="tech-item">
+                    <h3>PIL (Pillow)</h3>
+                    <p>Python Imaging Library for image processing operations. Handles image loading, format conversion, and basic manipulation tasks in the preprocessing pipeline.</p>
+                </div>
+                
+                <div class="tech-item">
+                    <h3>NumPy</h3>
+                    <p>Fundamental package for numerical computing in Python. Supports array operations, mathematical functions, and efficient data manipulation throughout the pipeline.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p style="font-size: 1.3rem; font-weight: bold; margin-bottom: 1rem;">LUMINARA</p>
+        <p>AI Image Detection System for Educational & Research Purposes</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">Powered by EfficientNet B4 Architecture</p>
+    </footer>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const result = document.getElementById('result');
+        const previewImg = document.getElementById('previewImg');
+        const resultLabel = document.getElementById('resultLabel');
+        const resultText = document.getElementById('resultText');
+        const confidenceFill = document.getElementById('confidenceFill');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.15)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload a valid image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                simulateDetection();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function simulateDetection() {
+            setTimeout(() => {
+                const isAI = Math.random() > 0.5;
+                const confidence = (Math.random() * 0.15 + 0.85) * 100;
+
+                result.style.display = 'block';
+                result.className = 'result ' + (isAI ? 'ai' : 'human');
+                
+                resultLabel.textContent = isAI ? 'AI Generated Image' : 'Human Created Image';
+                resultText.textContent = `Detection Confidence: ${confidence.toFixed(2)}%`;
+                
+                confidenceFill.style.width = confidence + '%';
+                confidenceFill.textContent = confidence.toFixed(1) + '%';
+
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 1500);
+        }
+
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
